@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="/static/plotly-2.29.1.min.js" charset="utf-8"></script>
+  <style>
+    label {
+      display: block;
+    }
+
+    label span {
+      display: inline-block;
+      text-align: right;
+      width: 130px;
+      vertical-align: top;
+      padding-right: 5px;
+    }
+
+    .green {
+      background-color: lightgreen;
+    }
+
+    .red {
+      background-color: lightpink;
+    }
+
+    .black {
+      background-color: black;
+      color: white;
+    }
+
+    .bar {
+      margin-left: calc(50% - 50vw);
+      margin-right: calc(50% - 50vw);
+      overflow: hidden;
+    }
+
+    .tab {
+      float: left;
+      padding: 8px 8px;
+      cursor: pointer;
+      background-color: inherit;
+      color: inherit;
+      border: none;
+    }
+
+    .tabSelected {
+      background-color: gray !important;
+    }
+
+    .num {
+      width: 60px;
+    }
+
+    .form {
+      display: inline-block;
+    }
+
+    .save {
+      margin-top: 15px;
+      float: right;
+    }
+
+    .week {
+      margin: 5px 20px 0px;
+    }
+
+    .week button {
+      margin: 0px 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <h2><img src="/static/icon.png" style="height:20px;">RetroPie Parental Control</h2>
+
+  <div class="bar black">
+    <button class="tab tabSelected" onclick="showTab(event,'usageTab'); refreshGraph();">Usage</button>
+    <button class="tab" onclick="showTab(event,'logTab'); refreshLog();">Log</button>
+    <button class="tab" onclick="showTab(event,'timerTab'); refreshTimer();">Timer</button>
+    <button class="tab" onclick="showTab(event,'scheduleTab'); refreshSchedule();">Schedule</button>
+    <button class="tab" onclick="showTab(event,'passwordTab'); refreshPassword();">Passwords</button>
+  </div>
+
+  <div id="usageTab" class="tabPage" style="display:block">
+    <div class="week"><button id="graphPrev" onclick="graphPrev()" disabled>&#8592; prev</button><em id="graphWeek"></em><button id="graphNext" onclick="graphNext()" disabled>next &#8594;</button></div>
+    <div id="graph"></div>
+  </div>
+
+  <div id="logTab" class="tabPage" style="display:none">
+    <div class="week"><button id="logPrev" onclick="logPrev()" disabled>&#8592; prev</button><em id="logWeek"></em><button id="logNext" onclick="logNext()" disabled>next &#8594;</button></div>
+    <pre id="log"></pre>
+  </div>
+
+  <div id="timerTab" class="tabPage" style="display:none">
+    <div class="form">
+      <p><label><span>limits are</span><em id="disabledText">active</em>
+          <button onclick="toggleDisabled()" id="disabledButton" disabled>disable limits</button></label></p>
+      <p><label><span>Game being played</span><em id="game"></em></label></p>
+      <p><label><span>duration</span><em id="duration"></em></label>
+      <p><label><span>remaining</span><em id="remaining"></em></label>
+        <label><span></span><button onclick="addMinutes(15)" style="margin-top: 10px;">Add 15 min</button></label>
+        <label><span></span><button onclick="setMinutes(0)" style="margin-top: 10px;">Clear to 0 min</button></label>
+      </p>
+    </div>
+  </div>
+
+  <div id="scheduleTab" class="tabPage" style="display:none">
+    <div class="form">
+      <p>
+        <label><span>Monday</span><input id="mon" type="number" class="num" /></label>
+        <label><span>Reason</span><input id="monReason" type="text" /></label>
+      </p>
+      <p>
+        <label><span>Tuesday</span><input id="tue" type="number" class="num" /></label>
+        <label><span>Reason</span><input id="tueReason" type="text" /></label>
+      </p>
+      <p>
+        <label><span>Wednesday</span><input id="wed" type="number" class="num" /></label>
+        <label><span>Reason</span><input id="wedReason" type="text" /></label>
+      </p>
+      <p>
+        <label><span>Thursday</span><input id="thu" type="number" class="num" /></label>
+        <label><span>Reason</span><input id="thuReason" type="text" /></label>
+      </p>
+      <p>
+        <label><span>Friday</span><input id="fri" type="number" class="num" /></label>
+        <label><span>Reason</span><input id="friReason" type="text" /></label>
+      </p>
+      <p>
+        <label><span>Saturday</span><input id="sat" type="number" class="num" /></label>
+        <label><span>Reason</span><input id="satReason" type="text" /></label>
+      </p>
+      <p>
+        <label><span>Sunday</span><input id="sun" type="number" class="num" /></label>
+        <label><span>Reason</span><input id="sunReason" type="text" /></label>
+      </p>
+      <button id="saveSchedule" onClick="saveSchedule()" class="save" disabled>Save</button>
+    </div>
+  </div>
+
+  <div id="passwordTab" class="tabPage" style="display:none">
+    <div class="form">
+      <p>
+        <label><span>Web password</span><input id="webAdmin" type="password" /></label>
+      </p>
+      <p>
+        <label>
+          <span>Unlimited code</span>
+          <textarea id="unlimited" type="text" readonly style="height: 80px;"></textarea>
+        </label>
+        <label>
+          <span></span>
+          <select onchange="addCode(event)">
+            <option value="">&lt;choose button&gt;</option>
+            <option value="up">Up</option>
+            <option value="down">Down</option>
+            <option value="left">Left</option>
+            <option value="right">Right</option>
+            <option value="lshoulder">Left Shoulder</option>
+            <option value="rshoulder">Right Shoulder</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="X">X</option>
+            <option value="Y">Y</option>
+          </select>
+          <button onclick="clearCode()">clear</button>
+        </label>
+      </p>
+      <button id="savePassword" onClick="savePassword()" class="save" disabled>Save</button>
+    </div>
+  </div>
+
+</body>
+<script>
+
+  const id = (i) => document.getElementById(i);
+  const uiData = {};
+  uiData.prevWeeks = 0;
+  uiData.countdown = null;
+
+  const refreshGraph = () => {
+    stopCountdown();
+    fetch("/graph/" + uiData.prevWeeks).then(async i => {
+      result = await i.json();
+      id("graphPrev").disabled = !result.hasPrevWeek;
+      id("graphNext").disabled = !result.hasNextWeek;
+      id("graphWeek").innerText = result.weekOf;
+      var layout = {
+        barmode: 'stack',
+        yaxis: { title: "minutes", fixedrange: true },
+        xaxis: { fixedrange: true },
+        legend: { "orientation": "h" }
+      }
+      config = { displaylogo: false, displayModeBar: false, responsive: true }
+      Plotly.newPlot(id('graph'), result.data, layout, config)
+    })
+  }
+
+  const refreshLog = () => {
+    stopCountdown();
+    fetch("/log/" + uiData.prevWeeks).then(async i => {
+      result = await i.json();
+      id("logPrev").disabled = !result.hasPrevWeek;
+      id("logNext").disabled = !result.hasNextWeek;
+      id("logWeek").innerText = result.weekOf;
+      id("log").innerText = result.data;
+    })
+  }
+
+  const refreshSchedule = (data) => {
+    stopCountdown();
+    if (!data) {
+      fetch("/schedule").then(async i => {
+        var data = await i.json()
+        refreshSchedule(data)
+      })
+    }
+    else {
+      uiData.schedule = data
+      // update UI
+      id("saveSchedule").disabled = false
+      id("mon").value = uiData.schedule.Monday.minutes
+      id("tue").value = uiData.schedule.Tuesday.minutes
+      id("wed").value = uiData.schedule.Wednesday.minutes
+      id("thu").value = uiData.schedule.Thursday.minutes
+      id("fri").value = uiData.schedule.Friday.minutes
+      id("sat").value = uiData.schedule.Saturday.minutes
+      id("sun").value = uiData.schedule.Sunday.minutes
+
+      id("monReason").value = uiData.schedule.Monday.reason
+      id("tueReason").value = uiData.schedule.Tuesday.reason
+      id("wedReason").value = uiData.schedule.Wednesday.reason
+      id("thuReason").value = uiData.schedule.Thursday.reason
+      id("friReason").value = uiData.schedule.Friday.reason
+      id("satReason").value = uiData.schedule.Saturday.reason
+      id("sunReason").value = uiData.schedule.Sunday.reason
+    }
+  }
+
+  const saveSchedule = () => {
+    if (uiData.schedule) {
+      //update UI
+      id("saveSchedule").disabled = true
+      uiData.schedule.Monday.minutes = parseInt(id("mon").value)
+      uiData.schedule.Tuesday.minutes = parseInt(id("tue").value)
+      uiData.schedule.Wednesday.minutes = parseInt(id("wed").value)
+      uiData.schedule.Thursday.minutes = parseInt(id("thu").value)
+      uiData.schedule.Friday.minutes = parseInt(id("fri").value)
+      uiData.schedule.Saturday.minutes = parseInt(id("sat").value)
+      uiData.schedule.Sunday.minutes = parseInt(id("sun").value)
+
+      uiData.schedule.Monday.reason = id("monReason").value
+      uiData.schedule.Tuesday.reason = id("tueReason").value
+      uiData.schedule.Wednesday.reason = id("wedReason").value
+      uiData.schedule.Thursday.reason = id("thuReason").value
+      uiData.schedule.Friday.reason = id("friReason").value
+      uiData.schedule.Saturday.reason = id("satReason").value
+      uiData.schedule.Sunday.reason = id("sunReason").value
+
+      fetch("/schedule", {
+        method: 'POST',
+        body: JSON.stringify(uiData.schedule),
+        headers: { 'Content-type': 'application/json; charset=UTF-8' }
+      }).then(async i => {
+        refreshSchedule(await i.json())
+      })
+    }
+  }
+
+  const refreshPassword = (data) => {
+    stopCountdown();
+    if (!data) {
+      fetch("/password").then(async i => {
+        var data = await i.json()
+        refreshPassword(data)
+      })
+    }
+    else {
+      uiData.password = data
+      // update UI
+      id("savePassword").disabled = false
+      id("unlimited").value = uiData.password.unlimited.join(", ")
+      uiData.editUnlimited = uiData.password.unlimited
+      id("webAdmin").value = uiData.password.webAdmin
+    }
+  }
+
+  const savePassword = () => {
+    if (uiData.password) {
+      //update UI
+      id("savePassword").disabled = true
+      uiData.password.unlimited = uiData.editUnlimited
+      uiData.password.webAdmin = id("webAdmin").value
+
+      fetch("/password", {
+        method: 'POST',
+        body: JSON.stringify(uiData.password),
+        headers: { 'Content-type': 'application/json; charset=UTF-8' }
+      }).then(async i => {
+        refreshPassword(await i.json())
+      })
+    }
+  }
+
+  const refreshTimer = (data) => {
+    stopCountdown();
+    if (!data) {
+      fetch("/timer").then(async i => {
+        var data = await i.json()
+        refreshTimer(data)
+      })
+    }
+    else {
+      uiData.timer = data
+      // update UI
+      if (!uiData.timer.started) {
+        id("remaining").innerText = new Date(data.remaining * 1000).toISOString().substring(11, 19);
+        id("duration").innerText = "";
+      }
+      id("disabledText").innerText = data.disabled ? "disabled" : "active";
+      id("disabledText").className = data.disabled ? "red" : "green";
+      id("disabledButton").innerText = data.disabled ? "activate limits" : "disable limits";
+      id("disabledButton").disabled = false;
+      id("game").innerText = data.currentGame ? data.currentGame : "<none>";
+      startCountdown();
+    }
+  }
+
+  const saveTimer = (data) => {
+    fetch("/timer", {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: { 'Content-type': 'application/json; charset=UTF-8' }
+    }).then(async i => {
+      refreshTimer(await i.json())
+    })
+  }
+
+  const toggleDisabled = () => {
+    id("disabledButton").disabled = true;
+    saveTimer({ disabled: !uiData.timer.disabled })
+  }
+
+  const addMinutes = (minutes) => {
+    saveTimer({ remaining: uiData.timer.remaining + (minutes * 60) })
+  }
+
+  const setMinutes = (minutes) => {
+    saveTimer({ remaining: (minutes * 60) })
+  }
+
+  const addCode = (evt) => {
+    if (evt.currentTarget.value) {
+      uiData.editUnlimited.push(evt.currentTarget.value);
+      id("unlimited").value = uiData.editUnlimited.join(", ")
+      evt.currentTarget.value = "";
+    }
+  }
+
+  const clearCode = () => {
+    uiData.editUnlimited = []
+    id("unlimited").value = uiData.editUnlimited
+  }
+
+  const graphNext = () => {
+    uiData.prevWeeks--;
+    refreshGraph();
+  }
+
+  const graphPrev = () => {
+    uiData.prevWeeks++;
+    refreshGraph();
+  }
+
+  const logNext = () => {
+    uiData.prevWeeks--;
+    refreshLog();
+  }
+
+  const logPrev = () => {
+    uiData.prevWeeks++;
+    refreshLog();
+  }
+
+  const startCountdown = () => {
+    //countdown remaining time every second
+    if (uiData.timer.started) {
+      uiData.countdown = setInterval(() => {
+        let now = new Date();
+        let seconds = now.getSeconds() + (60 * (now.getMinutes() + (60 * now.getHours())));
+        let duration = seconds - uiData.timer.startTime
+        let remaining = uiData.timer.remaining - duration;
+        if (remaining < 0) remaining = 0
+        if (uiData.timer.unlimited || uiData.timer.disabled) remaining = uiData.timer.remaining;
+        id("duration").innerText = new Date(duration * 1000).toISOString().substring(11, 19);
+        let remainingText = new Date(remaining * 1000).toISOString().substring(11, 19);
+        if (uiData.timer.unlimited) remainingText += " (unlimited)";
+        if (uiData.timer.disabled) remainingText += " (disabled)";
+        id("remaining").innerText = remainingText;
+      }, 1000);
+    }
+
+    //refresh every 10 sec
+    uiData.refreshTimer = setInterval(() => {
+      refreshTimer();
+    }, 10000);
+  }
+
+  const stopCountdown = () => {
+    if (uiData.countdown != null) {
+      clearInterval(uiData.countdown)
+      uiData.countdown = null
+    }
+    if (uiData.refreshTimer != null) {
+      clearInterval(uiData.refreshTimer)
+      uiData.refreshTimer = null
+    }
+  }
+
+  const showTab = (evt, tabPage) => {
+    //hide all tab pages
+    for (i of document.getElementsByClassName("tabPage")) {
+      i.style.display = "none";
+    }
+    //hide all tab hilights
+    for (i of document.getElementsByClassName("tab")) {
+      i.className = i.className.replace(" tabSelected", "");
+    }
+    //show tab page
+    id(tabPage).style.display = "block";
+    //highlight tab
+    evt.currentTarget.className += " tabSelected";
+  }
+
+  refreshGraph();
+
+</script>
+
+</html>
