@@ -74,7 +74,7 @@ def get_log(prevWeeks, raw=False):
 
 def __load(filePath, defaultFunc):
     if os.path.isfile(filePath):
-        with open(filePath, "r") as file:
+        with open(filePath) as file:
             return json.load(file)
     else:
         default = defaultFunc()
@@ -82,6 +82,11 @@ def __load(filePath, defaultFunc):
         return default
 
 def __save(filePath, data):
+    #insure directory
+    path = os.path.abspath(filePath)
+    if not os.path.exists(path):
+        os.makedirs(path)
+
     with open(filePath, "w") as file:
         json.dump(data, file, indent=4)
 
