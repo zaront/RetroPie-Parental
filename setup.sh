@@ -51,17 +51,15 @@ insure_package() {
   local exitCode=$?
   if [ $exitCode != 0 ]
   then
+    if [ -z $_hasUpdated ]
+    then
+      _hasUpdated=1
+      echo ${magenta}updating package listing: $package ${normal}
+      sudo apt update -y
+    fi
     echo ${magenta}installing missing package: $package ${normal}
     sudo apt install "$package" -y
     local exitCode=$?
-    # try updating package list - one time only
-    if [ $exitCode != 0 ] && [ -z $_triedUpdate ]
-    then
-      _triedUpdate=1
-      sudo apt update -y
-      sudo apt install "$package" -y
-      local exitCode=$?
-    fi
   fi
   if [ $exitCode != 0 ]
   then
