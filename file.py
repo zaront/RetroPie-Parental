@@ -83,7 +83,7 @@ def __load(filePath, defaultFunc):
 
 def __save(filePath, data):
     #insure directory
-    path = os.path.abspath(filePath)
+    path = os.path.abspath(os.path.dirname(filePath))
     if not os.path.exists(path):
         os.makedirs(path)
 
