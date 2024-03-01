@@ -20,11 +20,17 @@ logger = None
 def log(message):
     global logger
     if logger is None:
+        #insure directory
+        path = os.path.abspath(os.path.dirname(logFile))
+        if not os.path.exists(path):
+            os.makedirs(path)
+        #setup logger
         logger = logging.getLogger("log")
         logger.setLevel(logging.INFO)
         handler = logging.handlers.TimedRotatingFileHandler(logFile, when="W0", backupCount=20) # store last 20 weeks (weeks start with Monday)
         handler.setFormatter(logging.Formatter(fmt="%(asctime)s | %(message)s", datefmt=longDateFormat))
         logger.addHandler(handler)
+
     logger.info(message)
 
 def get_log(prevWeeks, raw=False):
