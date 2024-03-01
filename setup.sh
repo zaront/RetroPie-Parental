@@ -15,7 +15,7 @@ INSTALLDIR="$HOME/RetroPie-Parental"
 # script inserts
 AUTOSTART_LINE="$INSTALLDIR/web.py prod &"
 RUN_LINE1="source \"$INSTALLDIR/runcommand-parental.sh\""
-RUN_LINE2="    parental-control"
+RUN_LINE2="parental-control"
 
 #FUNCTIONS
 
@@ -148,7 +148,7 @@ install() {
   cd "$INSTALLDIR"
 
   # install python packages
-  echo "${magenta}Downloading python requirements...${normal}"
+  echo "${magenta}Verifying python requirements...${normal}"
   pip3 install -r requirements.txt
 
   # ==integrate with RetroPie sys by doing the following:
