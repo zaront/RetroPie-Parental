@@ -68,22 +68,6 @@ insure_package() {
   fi
 }
 
-insure_os() {
-  local sysName=$(uname -n)
-  if [ "$sysName" != "retropie" ]
-  then
-    echo "${yellow}This setup script was intended for the RetroPie os installed from an image for a raspberry pi.  
-    As such it was expecting the host name to be 'retropie'.  
-    Instead, your host name is '$(uname -n)'.  
-    This setup was tested for retropie os and may have errors installing on a diffrent setup.${normal}"
-    read -r -p "${bold}Do you want to continue? [Y/n] ${normal}" response
-    if [[ "$response" =~ ^([nN][oO]|[nN])$ ]]
-    then
-        exit 1
-    fi
-  fi
-}
-
 insure_file() {
   local file="$1"
   if [ ! -e "$file" ]
@@ -121,9 +105,6 @@ remove_line() {
 
 install() {
   echo "${standout}setting up Parental Controls on your RetroPie...${normal}"
-
-  # is this the right os
-  insure_os
 
   # is RetroPie installed
   insure_file $RUNCOMMAND
