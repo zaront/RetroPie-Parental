@@ -17,7 +17,7 @@ ROOT, FILENAME = os.path.split(os.path.abspath(__file__))
 
 
 def secondsToday():
-    now = datetime.datetime.now().replace(microsecond=0)
+    now = datetime.datetime.utcnow().replace(microsecond=0)
     seconds = int((now - now.replace(hour=0, minute=0, second=0)).total_seconds())
     return seconds
 
