@@ -74,7 +74,7 @@ Sudo edit `/opt/retropie/supplementary/runcommand/runcommand.sh` and add the fol
 
 First add the following after `source "$ROOTDIR/lib/inifuncs.sh"` which should be around line #96
 ```
-source "/home/pi/runcommand-parental.sh"
+source "/home/pi/RetroPie-Parental/runcommand-parental.sh"
 ```
 Seconds add the following before `rm -f "$LOG"` within the `runcommand()` function, which should be around line #1328
 ```
