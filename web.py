@@ -6,6 +6,7 @@ import file
 import os
 import flask_basicauth
 import logging
+import datetime
 
 ROOT, FILENAME = os.path.split(os.path.abspath(__file__))
 app = flask.Flask(__name__)
@@ -82,6 +83,14 @@ def update_schedule():
     data = flask.request.json
     if data is not None:
         file.save_schedule(data)
+
+        # update todays reason, if it changed
+        currentDay = datetime.datetime.today().weekday().strftime("%A")
+        timer = file.get_timer()
+        if timer["reason"] != data[currentDay]["reason"]:
+            timer["reason"] = data[currentDay]["reason"]
+            file.save_timer(timer)
+
     return flask.jsonify(data)
 
 @app.route("/password")
