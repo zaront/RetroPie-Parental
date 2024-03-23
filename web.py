@@ -85,7 +85,7 @@ def update_schedule():
         file.save_schedule(data)
 
         # update todays reason, if it changed
-        currentDay = datetime.datetime.today().weekday().strftime("%A")
+        currentDay = datetime.date.today().strftime("%A")
         timer = file.get_timer()
         if timer["reason"] != data[currentDay]["reason"]:
             timer["reason"] = data[currentDay]["reason"]

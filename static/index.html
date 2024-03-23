@@ -388,9 +388,7 @@
     //countdown remaining time every second
     if (uiData.timer.started) {
       uiData.countdown = setInterval(() => {
-        let now = new Date();
-        let seconds = now.getUTCSeconds() + (60 * (now.getUTCMinutes() + (60 * now.getUTCHours())));
-        let duration = seconds - uiData.timer.startTime
+        let duration = Math.floor((new Date() - new Date(uiData.timer.startTimestamp)) / 1000)
         let remaining = uiData.timer.remaining - duration;
         if (remaining < 0) remaining = 0
         if (uiData.timer.unlimited || uiData.timer.disabled) remaining = uiData.timer.remaining;

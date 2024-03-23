@@ -17,7 +17,7 @@ ROOT, FILENAME = os.path.split(os.path.abspath(__file__))
 
 
 def secondsToday():
-    now = datetime.datetime.utcnow().replace(microsecond=0)
+    now = datetime.datetime.now().replace(microsecond=0)
     seconds = int((now - now.replace(hour=0, minute=0, second=0)).total_seconds())
     return seconds
 
@@ -26,6 +26,7 @@ def start_timer(game, unlimited):
     timer["started"] = True
     timer["currentGame"] = game
     timer["startTime"] = secondsToday()
+    timer["startTimestamp"] = datetime.datetime.now(datetime.timezone.utc).astimezone().isoformat()
     timer["unlimited"] = unlimited
     file.save_timer(timer)
 
