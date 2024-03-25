@@ -115,9 +115,9 @@ def play_sound(sound):
     sound = ROOT + "/static/" + sound
     subprocess.call(["play", sound], stdout=open(os.devnull, "w"), stderr=subprocess.STDOUT)
 
-def start_game_monitor():
+def start_game_monitor(emulator):
     stop_game_monitor() # stop old monitors
-    process = multiprocessing.Process(target=lambda: subprocess.Popen([ROOT + "/" + FILENAME,"start_monitor"]))
+    process = multiprocessing.Process(target=lambda: subprocess.Popen([ROOT + "/" + FILENAME,"start_monitor", emulator]))
     process.start()
 
 def stop_game_monitor():
@@ -126,14 +126,13 @@ def stop_game_monitor():
             if proc.cmdline()[2:3] == ["start_monitor"]:
                 proc.kill()
 
-def kill_game():
+def kill_game(process_name):
     for proc in psutil.process_iter():
-        print(proc.name())
-        if proc.name() == "retroarch":
+        if proc.name() == process_name:
             proc.kill()
 
 # cli
-def start_game(game):
+def start_game(game, emulator):
     game = clean_name(game)
     timer = file.get_timer()
     remaining = remaining_time(timer)
@@ -171,7 +170,7 @@ def start_game(game):
         file.log("Started-Unlimited | " + game)
     else:
         file.log("Started | " + game)
-        start_game_monitor()
+        start_game_monitor(emulator)
     start_timer(game, unlimited)
     sys.exit(0) # allow game
 
@@ -183,7 +182,7 @@ def end_game(game):
     stop_game_monitor()
 
 # cli
-def start_monitor():
+def start_monitor(emulator):
     while True:
         # kill a game if its run out of time
         time.sleep(60)
@@ -193,25 +192,27 @@ def start_monitor():
             play_sound("game-warning.wav")
         if timer["remaining"] == 0:
             play_sound("game-end.wav")
-            kill_game()
+            kill_game(emulator)
             break
 
 # parse cli
 def parse_cli():
-    parser = argparse.ArgumentParser(description='impliments parental controls for RetroPie')
+    parser = argparse.ArgumentParser(description='implements parental controls for RetroPie')
     sub = parser.add_subparsers(dest="command")
     start = sub.add_parser("start_game", help="log that a game is starting")
     start.add_argument("game", help="name of the game that is starting")
+    start.add_argument("emulator", help="the process name of the emulator that the game will use")
     end = sub.add_parser("end_game", help="log that a game is ending")
     end.add_argument("game", help="name of the game that is starting")
-    sub.add_parser("start_monitor", help="monitors a running game")
+    monitor = sub.add_parser("start_monitor", help="monitors a running game")
+    monitor.add_argument("emulator", help="the process name of the emulator that the game will use")
     args = parser.parse_args()
     if args.command == "start_game":
-        start_game(args.game)
+        start_game(args.game, args.emulator)
     elif args.command == "end_game":
         end_game(args.game)
     elif args.command == "start_monitor":
-        start_monitor()
+        start_monitor(args.emulator)
     else:
         parser.print_help(sys.stderr)
         sys.exit(1)
