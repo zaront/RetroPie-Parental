@@ -1,0 +1,17 @@
+[Unit]
+Description=RetroPie-Parental
+Requires=network.target
+After=network.target
+
+[Service]
+TimeoutStartSec=0
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/RetroPie-Parental
+ExecStart=/home/pi/RetroPie-Parental/web.py prod
+SuccessExitStatus=143
+RestartSec=5
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
