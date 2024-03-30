@@ -190,7 +190,7 @@ def start_monitor(emulator):
         remaining = remaining_time(timer)
         if 1 <= remaining <= 60:
             play_sound("game-warning.wav")
-        if timer["remaining"] == 0:
+        if remaining == 0:
             play_sound("game-end.wav")
             kill_game(emulator)
             break
